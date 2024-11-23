@@ -59,7 +59,7 @@ namespace crt
 
 		uint8_t pinButtonDump; // A press on this button (active low) activates the dump.
 
-		volatile int32_t latestBatchCount;   // Count of logs since last dump. = index of arLogTypes to write to, if not cyclic.
+		/*volatile*/ int32_t latestBatchCount;   // Count of logs since last dump. = index of arLogTypes to write to, if not cyclic.
 
 		bool bPrinting;					     // Not a mutex, but perhaps safe enough for logging.
 
@@ -202,12 +202,12 @@ namespace crt
 				else if (logType == LogType::lt_Int32)
 				{
 					//ESP_LOGI(LoggerTask::taskName,"%d",*pNextInt32Log++);
-					ESP_LOGI(LoggerTask::taskName, "%"PRId32, *pNextInt32Log++);
+					ESP_LOGI(LoggerTask::taskName, "%" PRId32, *pNextInt32Log++);
 				}
                 else if (logType == LogType::lt_Uint32)
                 {
                     //ESP_LOGI(LoggerTask::taskName, "%d", *pNextUint32Log++);
-					ESP_LOGI(LoggerTask::taskName, "%"PRIu32, *pNextUint32Log++);
+					ESP_LOGI(LoggerTask::taskName, "%" PRIu32, *pNextUint32Log++);
                 }
 				else if (logType == LogType::lt_Float)
 				{
@@ -219,9 +219,9 @@ namespace crt
 					// ESP_LOGI(LoggerTask::taskName,"%d",latestBatchCount);
 					// ESP_LOGI(LoggerTask::taskName,"%d",i);
 					
-					ESP_LOGI(LoggerTask::taskName, "%"PRId32, latestLatestBatchCount);
-					ESP_LOGI(LoggerTask::taskName, "%"PRId32, latestBatchCount);
-					ESP_LOGI(LoggerTask::taskName, "%"PRId32, i);
+					ESP_LOGI(LoggerTask::taskName, "%" PRId32, latestLatestBatchCount);
+					ESP_LOGI(LoggerTask::taskName, "%" PRId32, latestBatchCount);
+					ESP_LOGI(LoggerTask::taskName, "%" PRId32, i);
 
 					assert(false);
 					break; // something's wrong.

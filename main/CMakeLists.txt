@@ -92,7 +92,6 @@ set(COMPONENT_ADD_INCLUDEDIRS
 "../libs/CleanGUI_for_TFT_eSPI/examples/TouchscreenButton"
 "../libs/CleanGUI_for_TFT_eSPI/examples/TouchscreenButtonGroup"
 "../libs/CleanGUI_for_TFT_eSPI/examples/TouchscreenKeyboard"
-"../libs/CleanGUI_for_TFT_eSPI/examples/TouchscreenKeyboardLowerCase"
 "../libs/CleanGUI_for_TFT_eSPI"
 
 "../libs"
