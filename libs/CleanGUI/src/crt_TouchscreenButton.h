@@ -19,6 +19,7 @@ namespace crt
 
 		bool bTextAddedToThisPanel;
 		bool bPressed;
+		bool bInvertedArea;	        // if true, the button registers a touch when the touch is outside the button.
 
 		IButtonListener* arButtonListeners[MaxButtonListenerCount] = {};
 		uint16_t nofButtonListeners;
@@ -29,23 +30,23 @@ namespace crt
 		// fontScale=0 can be used to activate automatic font scaling.
 		TouchscreenButton(const char* buttonName, const Vec2& locPos, CoordType coordTypeLocPos,
 			  const Vec2& size, int32_t cornerRadius, CoordType coordTypeSize, 
-			  Alignment alignment, uint32_t colPanel, uint32_t colBg,
+			  Alignment alignment, uint32_t colPanel, uint32_t colBg, bool bInvertedArea,
 			  const char* str, uint8_t font, uint32_t colFont, uint8_t fontScale, Alignment fontAlignment, int32_t lowerCaseOffsetY, int32_t upperCaseOffsetY) :
 			  PBase(buttonName, locPos, coordTypeLocPos, size, cornerRadius, coordTypeSize, alignment, colPanel, colBg),
 			  text(Vec2(0,0), CoordType::Promillage, fontAlignment, str, font, colFont, fontScale),
-			  bTextAddedToThisPanel(false), bPressed(false), nofButtonListeners(0), lowerCaseOffsetY(lowerCaseOffsetY), upperCaseOffsetY(upperCaseOffsetY)
+			  bTextAddedToThisPanel(false), bPressed(false), bInvertedArea(bInvertedArea), nofButtonListeners(0), lowerCaseOffsetY(lowerCaseOffsetY), upperCaseOffsetY(upperCaseOffsetY)
 		{
 			applyOffsetForLowerCaseText();
 		}
 
-		TouchscreenButton() : TouchscreenButton("", Vec2(0,0), CoordType::Pixels, Vec2(0,0), 0, CoordType::Pixels, Alignment::TopLeft, 0, 0, "", 0, 0, 0, Alignment::TopLeft, 0, 0)
+		TouchscreenButton() : TouchscreenButton("", Vec2(0,0), CoordType::Pixels, Vec2(0,0), 0, CoordType::Pixels, Alignment::TopLeft, 0, 0, false, "", 0, 0, 0, Alignment::TopLeft, 0, 0)
 		{
 		}
 
 		// convenience function to set most properties at once.
 		void setTouchScreenButtonProps(const char* buttonName, const Vec2& locPos, CoordType coordTypeLocPos,
 			  const Vec2& size, int32_t cornerRadius, CoordType coordTypeSize, 
-			  Alignment alignment, uint32_t colPanel, uint32_t colBg,
+			  Alignment alignment, uint32_t colPanel, uint32_t colBg, bool bInvertedArea,
 			  const char* str, uint8_t font, uint32_t colFont, uint8_t fontScale, Alignment fontAlignment, int32_t lowerCaseOffsetY, int32_t upperCaseOffsetY)
 		{
 			PBase::setPanelProps(buttonName, locPos, coordTypeLocPos, size, cornerRadius, coordTypeSize, alignment, colPanel, colBg);
@@ -275,7 +276,7 @@ namespace crt
 		{
 			Vec2 globPosPix = this->getGlobPosPix();
 			Vec2 sizePix = this->getSizePix();
-			return isPosInBounds(globPosPix, sizePix, pos);
+			return (isPosInBounds(globPosPix, sizePix, pos) != bInvertedArea);
 		}
 
 		bool isAlreadyPresent(IButtonListener* pButtonListener)

@@ -5,7 +5,7 @@
 #include "crt_IDisplay.h"
 #include "crt_Widget.h"
 #include "crt_ITouchListener.h"
-#include "crt_TouchscreenButtonGroupPanel.h" 
+#include "crt_TouchscreenButtonGroup.h" 
 #include <crt_IButton.h>
 
 namespace crt
@@ -13,7 +13,7 @@ namespace crt
 	enum TouchscreenKeyboardMode {LowercaseAlphabet,UppercaseAlphabet,Numerical};
 
 	template <size_t MaxNofChildren, size_t MaxNofKeyboardListeners>
-	class TouchscreenKeyboard : public TouchscreenButtonGroupPanel<MaxNofChildren+40>,
+	class TouchscreenKeyboard : public TouchscreenButtonGroup<MaxNofChildren+40>,
 		public IKeyboard, public IButtonListener
 	{
 	private: 
@@ -46,8 +46,10 @@ namespace crt
 					  tsButtonZ, tsButtonX, tsButtonC, tsButtonV, tsButtonB, tsButtonN, tsButtonM,
 				 tsButtonShift, tsButtonSpace, tsButtonToggleNumeric, tsButtonEnter;
 
+		TSButton tsOutsideKeyboardButton; // This button is used to register a touch outside the keyboard.
+
 	public:
-		using Base = TouchscreenButtonGroupPanel<MaxNofChildren + 40>;
+		using Base = TouchscreenButtonGroup<MaxNofChildren + 40>;
 		using WBase = Widget<MaxNofChildren + 40>;
 
 			/*tsButtonB, tsButtonC, tsButtonD, tsButtonD, tsButtonE,
@@ -57,13 +59,17 @@ namespace crt
 			tsButtonToggleNumeric, tsButtonSlashForward, tsButtonBackSpace, tsButtonDot, tsButtonEnter*/
 
 		TouchscreenKeyboard(const char* strName, const Vec2& locPos, CoordType coordTypeLocPos,
-			  const Vec2& size, int32_t cornerRadius, CoordType coordTypeSize, 
+			  const Vec2& size, /*int32_t cornerRadius,*/ CoordType coordTypeSize, 
 			  Alignment alignment, uint32_t colFg, uint32_t colBg, TouchscreenKeyboardMode initialTouchscreenKeyboardMode) :
-			Base::TouchscreenButtonGroupPanel(strName, locPos, coordTypeLocPos, size, cornerRadius, coordTypeSize, alignment, colFg, colBg),
+			/*Base::TouchscreenButtonGroupPanel(strName, locPos, coordTypeLocPos, size, cornerRadius, coordTypeSize, alignment, colFg, colBg),*/
+			Base::TouchscreenButtonGroup(strName, locPos, coordTypeLocPos, size, /*cornerRadius,*/ coordTypeSize, alignment),
 			nofKeyboardListeners(0),
 			bChildWidgetsAdded(false),
-			touchscreenKeyboardMode(TouchscreenKeyboardMode::LowercaseAlphabet) // will be updated at the end of the constructor.
+			touchscreenKeyboardMode(TouchscreenKeyboardMode::LowercaseAlphabet) /* will be updated at the end of the constructor. */,
+			tsOutsideKeyboardButton("tsOutsideKeyboardButton", Vec2(0,0), CoordType::Promillage, Vec2(1000,1000), 0, CoordType::Promillage, Alignment::TopLeft, colFg, colBg, true /*use inverted area for touch detection*/, "", 0, 0, 0, Alignment::TopLeft, 0, 0)
 		{
+			tsOutsideKeyboardButton.addButtonListener(this);	// This large "button" displays the back of the keyboard, and will be used to register a touch outside the keyboard.
+
 			initTsButton(tsButtonQ, "q", 0, 0);
 			initTsButton(tsButtonW, "w", 0, 1);
 			initTsButton(tsButtonE, "e", 0, 2);
@@ -94,6 +100,7 @@ namespace crt
 			initTsButton(tsButtonSpace, " ", 3, 1);
 			initTsButton(tsButtonToggleNumeric, "123", 3, 2);
 			initTsButton(tsButtonEnter, "ENTER", 3, 3);
+
 			switchKeyboardMode(touchscreenKeyboardMode);
 		}
 
@@ -148,7 +155,7 @@ namespace crt
 			tsButton.setTouchScreenButtonProps(/*name*/name,
 				/*locPos*/Vec2(x, y),
 				CoordType::Promillage, /*size*/Vec2(keyWidth*keyWidthMultiplier, keyHeight), /*cornerRadius*/keyCornerRadiusPromillage, CoordType::Promillage,
-				Alignment::TopLeft,	/*colPanel*/0x00FF0000, /*colBg*/0x00000000,
+				Alignment::TopLeft,	/*colPanel*/0x00FF0000, /*colBg*/0x00000000, /*bInvertedArea*/false,
 				/*text*/ name, /*buttonFont*/ buttonFont, /*colFont*/ 0x00FFFFFF, /*fontScale*/ 0, Alignment::MidMid, /*lowerCaseOffsetY*/-120, /*upperCaseOffsetY*/-70);
 
 			tsButton.addButtonListener(this);
@@ -157,6 +164,8 @@ namespace crt
 		void addChildWidgets()
 		{
 			ESP_LOGI("keyb", "will Add ChildWidgets");
+			Base::addTouchListener(tsOutsideKeyboardButton, tsOutsideKeyboardButton);
+
 			Base::addTouchListener(tsButtonQ, tsButtonQ);
 			Base::addTouchListener(tsButtonW, tsButtonW);
 			Base::addTouchListener(tsButtonE, tsButtonE);
@@ -187,6 +196,7 @@ namespace crt
 			Base::addTouchListener(tsButtonSpace, tsButtonSpace);
 			Base::addTouchListener(tsButtonToggleNumeric, tsButtonToggleNumeric);
 			Base::addTouchListener(tsButtonEnter, tsButtonEnter);
+
 			bChildWidgetsAdded = true;
 		}
 
@@ -295,7 +305,7 @@ namespace crt
 	public:
 		// next function will be called by the parent, when this touchscreenKeyBoardLowerCase
 		// is added to it as a child widget.
-		/*override*/ virtual void setDisplay(IDisplay& display)
+		/*override*/ /*virtual*/ void setDisplay(IDisplay& display)
 		{
 			Base::setDisplay(display);
 			if (!bChildWidgetsAdded)
@@ -312,6 +322,19 @@ namespace crt
 		{
 			//ESP_LOGI("Pressed", "button: %s", pButton->getButtonName());
 			int i;
+
+			if (pButton == &tsOutsideKeyboardButton)
+			{
+				//logger.logText("tsOutsideKeyboardButton pressed");
+				//ESP_LOGI("tsOutsideKeyboardButton", "pressed");
+				for (i = 0; i < nofKeyboardListeners; i++)
+				{
+					arKeyboardListener[i]->keyPressed("OutsideKeyboardPressed");
+				}
+				// Base::hide(true);	// Pressing outside the keyboard will hide the keyboard - Nope, this is not the responsibility of the keyboard.
+				return;
+			}
+
 			for (i = 0; i < nofKeyboardListeners; i++)
 			{
 				arKeyboardListener[i]->keyPressed(pButton->getButtonName());

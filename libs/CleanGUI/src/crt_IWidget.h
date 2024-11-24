@@ -12,6 +12,7 @@ namespace crt
 	class IWidget
 	{
 	public:
+	// relation to world
 		virtual bool addChildWidget(IWidget& widget) = 0;        // build a tree from back to forth: root is drawn first.
 		virtual WidgetType getWidgetType() = 0;
 		virtual void setName(const char* str) = 0;
@@ -22,6 +23,8 @@ namespace crt
 		virtual void setGlobPosOfParent(const Vec2& locPos) = 0;  // coordinates with origin top left.
 		virtual Vec2 getSizeOfParent() = 0;					      // always in pixels. always in abs
 		virtual void setSizeOfParent(const Vec2& sizeOfParent) = 0;     // coordinates with origin top left.
+	
+	// positioning
 		virtual Vec2 getLocPos() = 0;                             
 		virtual void setLocPos(const Vec2& locPos, CoordType coordTypeLocPos, Alignment alignment) = 0; // CoordType can be Pixels or Promillage
 		virtual CoordType getCoordTypeLocPos() = 0;
@@ -30,6 +33,8 @@ namespace crt
 		virtual void setSize(const Vec2& size, CoordType coordTypeSize) = 0;
 		virtual CoordType getCoordTypeSize() = 0;
 		virtual Alignment getAlignment() = 0;
+
+	// enabling, disabling
 		virtual void show(bool bIncludeChildren) = 0;		  // show/hide is about the visual aspect of a widget.
 		virtual void hide(bool bIncludeChildren) = 0;        // show immediately draws it. hide immediately undraws it.
 		virtual bool isShown() = 0;

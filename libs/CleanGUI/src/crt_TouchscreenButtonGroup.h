@@ -18,8 +18,15 @@ namespace crt
 
 	public:
 		using WBase = Widget<MaxNofChildren>;
+		
+		TouchscreenButtonGroup(const char* strName, const Vec2& locPos, CoordType coordTypeLocPos,
+			  const Vec2& size, CoordType coordTypeSize, Alignment alignment)
+			  : WBase(strName, locPos, coordTypeLocPos, size, coordTypeSize, alignment)
+		{
+		}
+
 		TouchscreenButtonGroup(const char* strName) :
-			  WBase(strName, Vec2(0,0)/*locPos*/, CoordType::Pixels/*coordTypeLocPos*/,
+			  TouchscreenButtonGroup(strName, Vec2(0,0)/*locPos*/, CoordType::Pixels/*coordTypeLocPos*/,
 				    Vec2(1000,1000)/*size*/, CoordType::Promillage/*coordTypeSize*/, Alignment::TopLeft)
 		{
 		}

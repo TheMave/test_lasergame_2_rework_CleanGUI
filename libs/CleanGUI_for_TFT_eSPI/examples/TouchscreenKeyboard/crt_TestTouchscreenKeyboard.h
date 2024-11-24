@@ -30,7 +30,7 @@ namespace crt
 	Logger<100> theLogger("Logger", 2 /*priority*/, ARDUINO_RUNNING_CORE, pinButtonDump);
 	ILogger& logger = theLogger;	// This is the global object. It can be accessed without knowledge of the template parameter of theLogger.
 
-	class TestTouchscreenKeyboard : public Task, public IKeyboardListener
+	class TestTouchscreenKeyboard : public Task, public IKeyboardListener, public ITouchListener
 	{
 		static const int CommandBufferSize = 300;
 		static const int MaxNofClientTasks = 10;
@@ -46,6 +46,7 @@ namespace crt
 
 		Queue<const char*, 10> queueKeyPressedStrings;
 		Queue<const char*, 10> queueKeyReleasedStrings;
+		Flag flagTouchPressed;
 		
 	public:
 		TestTouchscreenKeyboard(const char *taskName, unsigned int taskPriority,unsigned int taskCoreNumber) :
@@ -65,11 +66,12 @@ namespace crt
 				/*colFg*/(uint32_t)0x00666666, /*colBg*/0x00000000),
 
 			touchscreenKeyboard("touchscreenKeyboard", /*locPos*/Vec2(0, 500), CoordType::Promillage,
-				/*size*/Vec2(1000, 500), /*cornerRadius*/0, CoordType::Promillage, Alignment::TopLeft,
+				/*size*/Vec2(1000, 500), /*cornerRadius 0,*/ CoordType::Promillage, Alignment::TopLeft,
 				/*colFg*/(uint32_t)0x00888888, /*colBg*/0x00000000, TouchscreenKeyboardMode::LowercaseAlphabet),
 				
 			queueKeyPressedStrings(this),
-			queueKeyReleasedStrings(this)
+			queueKeyReleasedStrings(this),
+			flagTouchPressed(this)
 		{
 			start(); // For simplicity, the task is started right away in it's constructor.
 		}
@@ -85,6 +87,16 @@ namespace crt
 			queueKeyReleasedStrings.write(strKey);
 		}
 
+		/* override */ void touchPressed(const Vec2& pos)
+		{
+			flagTouchPressed.set();
+		}
+
+		/* override */ void touchReleased(const Vec2& pos)
+		{
+			; // not interested.
+		}
+
 	private:
 		void main()
 		{
@@ -98,6 +110,7 @@ namespace crt
 			                                      // display independent.
 			PageRoot<10> page1("root", display);
 			asyncDisplay.addTouchListener(&touchscreenKeyboard);
+			asyncDisplay.addTouchListener(this);
 
 			touchscreenKeyboard.addKeyboardListener(this);
 
@@ -119,13 +132,18 @@ namespace crt
 			{
 				dumpStackHighWaterMarkIfIncreased(); 		// This function call takes about 0.25ms! It should be called while debugging only.
 
-				waitAny(queueKeyPressedStrings+queueKeyReleasedStrings);
+				waitAny(queueKeyPressedStrings+queueKeyReleasedStrings+flagTouchPressed);
 
 				if (hasFired(queueKeyPressedStrings))
 				{
 					queueKeyPressedStrings.read(strKey);
+					flagTouchPressed.clear();
 
-					if(strncmp(strKey, "SHIFT", 5) == 0)
+					if(strncmp(strKey, "OutsideKeyboardPressed", 22) == 0)
+					{
+						touchscreenKeyboard.hide(true);
+					}
+					else if(strncmp(strKey, "SHIFT", 5) == 0)
 					{;}// do nothing, ignore shift key.
 					else if(strncmp(strKey, "123", 3) == 0)
 					{;} // do nothing, ignore 123 key.
@@ -145,6 +163,15 @@ namespace crt
 				{
 					queueKeyReleasedStrings.read(strKey);
 					//ESP_LOGI(Task::taskName, "Key Released:%s", str);
+				}
+				else if (hasFired(flagTouchPressed))
+				{
+					// A touch event outside the keyboard was already handled bover, via a keypressed event.
+					// That hid the keyboard. For the sake of this test, lets' show it again.
+					if(!touchscreenKeyboard.isShown())
+					{
+						touchscreenKeyboard.show(true);
+					}
 				}
 				else
 				{
