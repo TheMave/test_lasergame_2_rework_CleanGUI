@@ -1,7 +1,7 @@
 // by Marius Versteegen, 2024
 
 #pragma once
-#include "crt_IKeyboard.h"
+#include "crt_IInputfield.h"
 
 namespace crt
 {
@@ -9,12 +9,13 @@ namespace crt
 	// been avoided if not IButton* but an enum value would be passed to identify the button. 
 	// But I like to avoid the hassle of bookkeeping enums.
 	// Mutual dependency of pure abstract interfaces is perfectly sound.
-	class IKeyboard;
+	class IInputfield;
 
-	class IKeyboardListener
+	class IInputfieldListener
 	{
 	public:
-		virtual void keyPressed(const char* strKey) = 0;
-		virtual void keyReleased(const char* strKey) = 0;
+		virtual void inputNewKey(IInputfield* pInputfield,const char* newChar) = 0;
+		virtual void inputfieldPressed(IInputfield* pInputfield) = 0;
+		virtual void outsideInputfieldPressed(IInputfield* pInputfield) = 0;
 	};
 };

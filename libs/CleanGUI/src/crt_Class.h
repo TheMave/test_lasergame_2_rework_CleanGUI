@@ -1,3 +1,5 @@
+// by Marius Versteegen, 2024
+
 #pragma once
 
 namespace crt

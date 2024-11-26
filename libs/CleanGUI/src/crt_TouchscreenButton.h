@@ -1,3 +1,5 @@
+// by Marius Versteegen, 2024
+
 #pragma once
 #include <assert.h>
 #include <crt_FreeRTOS.h>
@@ -63,7 +65,7 @@ namespace crt
 			{
 				// If the text is all lowercase, we can move it up a bit to center it on the button.
 				// This is a heuristic, and may not work for all fonts.
-				int32_t offsetY = (isAllLowercaseLetters(str, 10)) ? lowerCaseOffsetY : upperCaseOffsetY;
+				int32_t offsetY = (isAllLowercaseLetters(str, 1000)) ? lowerCaseOffsetY : upperCaseOffsetY;
 					
 				text.setLocPos(Vec2(0,offsetY),text.getCoordTypeLocPos(),text.getAlignment()); // move the text up a bit, to center it on the button.
 			}

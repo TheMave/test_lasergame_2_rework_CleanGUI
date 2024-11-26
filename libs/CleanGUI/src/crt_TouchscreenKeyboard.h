@@ -1,3 +1,5 @@
+// by Marius Versteegen, 2024
+
 #pragma once
 #include <assert.h>
 #include <crt_FreeRTOS.h>
@@ -43,7 +45,7 @@ namespace crt
 		using TSButton = TouchscreenButton<0, 1>;
 		TSButton tsButtonQ, tsButtonW, tsButtonE, tsButtonR, tsButtonT, tsButtonY, tsButtonU, tsButtonI, tsButtonO, tsButtonP, 
 		            tsButtonA, tsButtonS, tsButtonD, tsButtonF, tsButtonG, tsButtonH, tsButtonJ, tsButtonK, tsButtonL,
-					  tsButtonZ, tsButtonX, tsButtonC, tsButtonV, tsButtonB, tsButtonN, tsButtonM,
+					  tsButtonZ, tsButtonX, tsButtonC, tsButtonV, tsButtonB, tsButtonN, tsButtonM, tsButtonDel,
 				 tsButtonShift, tsButtonSpace, tsButtonToggleNumeric, tsButtonEnter;
 
 		TSButton tsOutsideKeyboardButton; // This button is used to register a touch outside the keyboard.
@@ -96,6 +98,7 @@ namespace crt
 			initTsButton(tsButtonB, "b", 2, 4);
 			initTsButton(tsButtonN, "n", 2, 5);
 			initTsButton(tsButtonM, "m", 2, 6);
+			initTsButton(tsButtonDel, "DEL", 2, 7);
 			initTsButton(tsButtonShift, "SHIFT", 3, 0);
 			initTsButton(tsButtonSpace, " ", 3, 1);
 			initTsButton(tsButtonToggleNumeric, "123", 3, 2);
@@ -140,6 +143,11 @@ namespace crt
 			float keyWidthMultipliersRow3[] = {3.0f, 3.0f, 2.0f, 3.0f}; // For Shift, Space, 123, Enter
 			if (row < 3) // The small keys on the top 3 rows.
 			{
+				if((row==2)&&(col==7)) // the DEL key
+				{
+					keyWidthMultiplier = 2;
+				}
+
 				x = paddingX / 2 + col * stepSizeX + row * stepSizeX / 2;
 			}
 			else // row == 3, the bottom row with larger keys.
@@ -192,6 +200,7 @@ namespace crt
 			Base::addTouchListener(tsButtonB, tsButtonB);
 			Base::addTouchListener(tsButtonN, tsButtonN);
 			Base::addTouchListener(tsButtonM, tsButtonM);	
+			Base::addTouchListener(tsButtonDel, tsButtonDel);	
 			Base::addTouchListener(tsButtonShift, tsButtonShift);
 			Base::addTouchListener(tsButtonSpace, tsButtonSpace);
 			Base::addTouchListener(tsButtonToggleNumeric, tsButtonToggleNumeric);

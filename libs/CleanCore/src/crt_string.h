@@ -1,3 +1,5 @@
+
+#pragma once
 // not by Marius Versteegen, 2023:
 //
 // As I want my gui to be programmed in accordance with best
@@ -78,6 +80,9 @@ namespace crt {
 	/// (The .clear() is not strictly needed because the default constructor
 	/// creates an empty string, but it improves readability).
 	//
+
+
+
 	class string_base {
 	private:   
 	   
@@ -583,51 +588,41 @@ namespace crt {
 	 
 	/// compare for equality
 	template< typename T >   
-	typename std::enable_if < 
-	   ! std::is_base_of< string_base, T >::value, bool >::type    
-	operator==( const T & lhs, const string_base & rhs ){
+	bool operator==( const T & lhs, const string_base & rhs ){
 	   return rhs.operator==( lhs );
 	}
 	   
 	/// compare for inequality
 	template< typename T >   
-	typename std::enable_if < 
-	   ! std::is_base_of< string_base, T >::value, bool >::type    
-	operator!=( const T & lhs, const string_base & rhs ){
+	bool operator!=( const T & lhs, const string_base & rhs ){
 	   return rhs.operator!=( lhs );
 	}
 	   
 	/// compare for large than
 	template< typename T >   
-	typename std::enable_if < 
-	   ! std::is_base_of< string_base, T >::value, bool >::type    
-	operator>( const T & lhs, const string_base & rhs ){
+	bool operator>( const T & lhs, const string_base & rhs ){
 	   return ! rhs.operator<=( lhs );
 	}
 	   
 	/// compare for large than or equal
 	template< typename T >   
-	typename std::enable_if < 
-	   ! std::is_base_of< string_base, T >::value, bool >::type    
-	operator>=( const T & lhs, const string_base & rhs ){
+	bool operator>=( const T & lhs, const string_base & rhs ){
 	   return ! rhs.operator<( lhs );
 	}
 	   
 	/// compare for smaller than
 	template< typename T >   
-	typename std::enable_if < 
-	   ! std::is_base_of< string_base, T >::value, bool >::type    
-	operator<( const T & lhs, const string_base & rhs ){
+	bool operator<( const T & lhs, const string_base & rhs ){
 	   return ! rhs.operator>=( lhs );
 	}
 	   
 	/// compare for smaller than or equal
 	template< typename T >   
-	typename std::enable_if < 
-	   ! std::is_base_of< string_base, T >::value, bool >::type    
-	operator<=( const T & lhs, const string_base & rhs ){
+	bool operator<=( const T & lhs, const string_base & rhs ){
 	   return ! rhs.operator>( lhs );
 	}
+
+	char crt::std::string_base::dummy = '\0';
 
 	//#endif
 	 
@@ -663,6 +658,10 @@ namespace crt {
 		  string_base( maximum_length, content, x )
 	   {}      
 	   
+	       // Expliciete copy constructor
+    	string(const string& other) : string_base(maximum_length, content, other) {
+        *this = other; // Roep de bestaande toewijzingsoperator aan
+    	}
 	   
 	   /// \cond INTERNAL 
 	   // needed to avoid ambiguity

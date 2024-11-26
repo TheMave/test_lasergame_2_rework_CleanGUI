@@ -1,3 +1,5 @@
+// by Marius Versteegen, 2024
+
 #pragma once
 #include "crt_Vec2.h"
 

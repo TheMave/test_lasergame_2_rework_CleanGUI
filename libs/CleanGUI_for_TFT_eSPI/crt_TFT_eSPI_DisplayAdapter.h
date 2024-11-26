@@ -1,3 +1,4 @@
+// by Marius Versteegen, 2024
 #pragma once
 // Important: when using CleanRTOS, 
 // #include<CleanRTOS> at this location or prior to including THIS

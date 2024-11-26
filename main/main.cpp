@@ -44,8 +44,8 @@
 //#include "TestButton.ino"
 //#include <TouchscreenButton.ino>
 //#include <TouchscreenButtonGroup.ino>
-#include <TouchscreenKeyboard.ino>  // Not finalised yet.
-//#include <TouchscreenKeyboardLowerCase.ino>  // Not finalised yet.
+//#include <TouchscreenKeyboard.ino>
+#include <Inputfield.ino>
 //#include <Pong2.ino>
 
 // **** Test of thirdparty libs CleanGUI depends on ****
