@@ -17,6 +17,8 @@
 //#define CONFIG_EXAMPLE_SCAN_LIST_SIZE 20  // Dit blijkt nodig voor kopie_van_scan_example
 //#include <kopie_van_scan_example.h>
 
+#include <esp_http_client_example.h>
+
 // Selecteer onderstaand de .ino van je applicatie
 // **** CleanRTOS Core Tests ****
 //#include <HelloWorld.ino>    					// For initial test.
@@ -45,7 +47,7 @@
 //#include <TouchscreenButton.ino>
 //#include <TouchscreenButtonGroup.ino>
 //#include <TouchscreenKeyboard.ino>
-#include <Inputfield.ino>
+//#include <Inputfield.ino>
 //#include <Pong2.ino>
 
 // **** Test of thirdparty libs CleanGUI depends on ****
@@ -91,10 +93,19 @@ void app_main(void)
     // }
     // ESP_ERROR_CHECK(ret);
 
-	setup();
+	#ifdef CONFIG_EXAMPLE_HTTP_ENDPOINT
+		http_client_setup();
+	#else
+		setup();
+	#endif
+
 	for(;;)
 	{
-		loop();
+		#ifdef CONFIG_EXAMPLE_HTTP_ENDPOINT
+			http_client_loop();
+		#else
+			loop();
+		#endif
 		//yield();
 		vTaskDelay(1);  // prevent the watchdog timer to kick in for this thread.
 	}

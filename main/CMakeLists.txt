@@ -9,6 +9,8 @@ set(COMPONENT_SRCS
 "../libs/CleanCore/src/crt_FromArduinoIDE.cpp"
 "../libs/CleanRTOS/src/crt_MainInits.cpp" 
 
+"../libs/esp_http_client/main/esp_http_client_example.c"
+
 ## TFT_.. some incompatible stuff, it seems, for esp32-c6
 ## perhaps easily fixed (some constant names?)
 "../libs/TFT_eSPI/TFT_eSPI.cpp"
@@ -113,6 +115,8 @@ set(COMPONENT_ADD_INCLUDEDIRS
 "../components/arduino-esp32/libraries/LittleFS/examples/LITTLEFS_test"
 
 "../apps/kopie_van_wifi_scan_example_van_esp_idf"
+"../libs/esp_http_client/main"
+
 "../apps/pong_cleangui"
 
 #"../apps/TestHwLibGlcOled"

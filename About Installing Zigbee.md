@@ -1,7 +1,7 @@
 # esp-zigbee-sdk
 
-## Introduction  
-  
+## Introduction
+
 ESP-Zigbee-SDK is the official Zigbee development framework for Espressif's ESP32 series SoCs. It provides varieties of APIs aimed to simplify the development process of Zigbee products and enable the users to go to production in the shortest possible time.
 
 Refer [ESP Zigbee SDK Guide](https://docs.espressif.com/projects/esp-zigbee-sdk/en/latest) for the latest version of the documentation.
@@ -13,6 +13,7 @@ The SDK is built on top of [ESP-IDF](https://github.com/espressif/esp-idf) and [
 ![esp_zigbee_stack](docs/_static/esp_zigbee_stack.png)
 
  The ZBOSS and Espressif Zigbee SDK is provided as pre-built library:
+
 - [esp-zboss-lib](https://components.espressif.com/components/espressif/esp-zboss-lib): ZBOSS libraries for ESP32 series SoCs
 - [esp-zigbee-lib](https://components.espressif.com/components/espressif/esp-zigbee-lib): Espressif Zigbee SDK and APIs libraries
 
@@ -27,6 +28,7 @@ git clone https://github.com/espressif/esp-zigbee-sdk.git
 ```
 
 ## Supported ESP-IDF versions
+
 * This SDK currently works with ESP-IDF release/v5.1 branch.
 
 ## Copyright Notes
