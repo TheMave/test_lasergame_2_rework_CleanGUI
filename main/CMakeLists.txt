@@ -84,9 +84,9 @@ set(COMPONENT_ADD_INCLUDEDIRS
 "../libs/LITTLEFS/examples/LITTLEFS_test"
 
 "../libs/CleanGUI/src"
-"../libs/CleanGUI/src/Internals"
+"../libs/CleanGUI/src/internals"
 "../libs/CleanGUI_async/src"
-"../libs/CleanGUI_async/src/Internals"
+"../libs/CleanGUI_async/src/internals"
 "../libs/CleanGUI_extraTests/examples/Vec2"
 
 "../libs/CleanGUI_for_TFT_eSPI/examples/Panel"
@@ -109,10 +109,10 @@ set(COMPONENT_ADD_INCLUDEDIRS
 # Belangrijk voor Arduino IDE code: de output van Serial Monitor
 # wordt naar een van de USB-ports van je devkit gestuurd. 
 # Als je toevallig programmeert via de andere, dan zie je niets.
-"../components/arduino-esp32/libraries/ESP32/examples/Analogread"
-"../components/arduino-esp32/libraries/WiFi/examples/WifiAccessPoint"
-"../components/arduino-esp32/libraries/WiFi/examples/WifiScan"
-"../components/arduino-esp32/libraries/LittleFS/examples/LITTLEFS_test"
+#"../components/arduino-esp32/libraries/ESP32/examples/Analogread"
+#"../components/arduino-esp32/libraries/WiFi/examples/WifiAccessPoint"
+#"../components/arduino-esp32/libraries/WiFi/examples/WifiScan"
+#"../components/arduino-esp32/libraries/LittleFS/examples/LITTLEFS_test"
 
 "../apps/kopie_van_wifi_scan_example_van_esp_idf"
 "../libs/esp_http_client/main"

@@ -17,7 +17,7 @@
 //#define CONFIG_EXAMPLE_SCAN_LIST_SIZE 20  // Dit blijkt nodig voor kopie_van_scan_example
 //#include <kopie_van_scan_example.h>
 
-#include <esp_http_client_example.h>
+//#include <esp_http_client_example.h>
 
 // Selecteer onderstaand de .ino van je applicatie
 // **** CleanRTOS Core Tests ****
@@ -40,7 +40,7 @@
 // **** .CleanGUI related Tests ****
 //#include <Vec2.ino>
 //#include <Panel.ino>
-//#include <Button_demo.ino>
+#include <Button_demo.ino>
 //#include <AsyncDisplay.ino>
 //#include <Free_Font_Demo.ino>
 //#include "TestButton.ino"
