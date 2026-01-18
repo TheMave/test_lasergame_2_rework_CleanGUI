@@ -44,8 +44,8 @@
 //#include <AsyncDisplay.ino>
 //#include <Free_Font_Demo.ino>
 //#include "TestButton.ino"
-#include <TouchscreenButton.ino>
-//#include <TouchscreenButtonGroup.ino>
+//#include <TouchscreenButton.ino>
+#include <TouchscreenButtonGroup.ino>
 //#include <TouchscreenKeyboard.ino>
 //#include <Inputfield.ino>
 //#include <Pong2.ino>

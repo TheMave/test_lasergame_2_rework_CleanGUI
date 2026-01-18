@@ -40,37 +40,41 @@ namespace crt
 
 	public:
 		TestTouchscreenButtonGroup(const char *taskName, unsigned int taskPriority,unsigned int taskCoreNumber) :
-			Task(taskName, taskPriority, 
+			Task(taskName, taskPriority,
 				10000+sizeof(freeFonts)+sizeof(tft_eSPI_DisplayAdapter)+sizeof(asyncDisplay)+
 				sizeof(tsButtonA)+sizeof(tsButtonB)+sizeof(tsButtonGroup), taskCoreNumber),
 
 			tft_eSPI_DisplayAdapter(freeFonts, "/TouchCalData1"/*filenameCalibration*/, false/*bRepeatCalibration*/),
 
 			asyncDisplay("AsyncDisplay", 2 /*priority*/, 20000 + CommandBufferSize*sizeof(DisplayCommand)+
-				            MaxNofClientTasks*sizeof(PrintContext) /*stackBytes*/, ARDUINO_RUNNING_CORE, 
+				            MaxNofClientTasks*sizeof(PrintContext) /*stackBytes*/, ARDUINO_RUNNING_CORE,
 				            tft_eSPI_DisplayAdapter, 0/*rotation*/, 2/*fontTouchCalibration*/),
 
 			// fontScale=0 triggers automatical matching of fontscale with the button height.
 			tsButtonA(/*name*/"bn_A",/*locPos*/Vec2(100, 100), CoordType::Promillage,
 				/*size*/Vec2(500, 100), /*cornerRadius*/100, CoordType::Promillage,
 				Alignment::MidMid,	/*colPanel*/0x00FF0000, /*colBg*/0x00000000,
-				"Button A", /*buttonFont*/ 2, /*colFont*/ 0x00FFFFFF, /*fontScale*/ 0, Alignment::MidMid),
+				/*bInvertedArea*/false, "Button A", /*buttonFont*/ 2, /*colFont*/ 0x00FFFFFF, /*fontScale*/ 0, Alignment::MidMid,
+			/*lowerCaseOffsetY*/0, /*upperCaseOffsetY*/0),
 
 			tsButtonB(/*name*/"bn_B", /*locPos*/Vec2(100, 250), CoordType::Promillage,
 				/*size*/Vec2(500, 100), /*cornerRadius*/100, CoordType::Promillage,
 				Alignment::MidMid,	/*colPanel*/0x00FF0000, /*colBg*/0x00000000,
-				"Button B", /*buttonFont*/ 2, /*colFont*/ 0x00FFFFFF, /*fontScale*/ 0, Alignment::MidMid),
+				/*bInvertedArea*/false, "Button B", /*buttonFont*/ 2, /*colFont*/ 0x00FFFFFF, /*fontScale*/ 0, Alignment::MidMid,
+			/*lowerCaseOffsetY*/0, /*upperCaseOffsetY*/0),
 
 			// fontScale=0 triggers automatical matching of fontscale with the button height.
 			tsButtonC(/*name*/"bn_C",/*locPos*/Vec2(100, 400), CoordType::Promillage,
 				/*size*/Vec2(500, 100), /*cornerRadius*/100, CoordType::Promillage,
 				Alignment::MidMid,	/*colPanel*/0x00008800, /*colBg*/0x00000000,
-				"Button C", /*buttonFont*/ 2, /*colFont*/ 0x00FFFFFF, /*fontScale*/ 0, Alignment::MidMid),
+				/*bInvertedArea*/false, "Button C", /*buttonFont*/ 2, /*colFont*/ 0x00FFFFFF, /*fontScale*/ 0, Alignment::MidMid,
+			/*lowerCaseOffsetY*/0, /*upperCaseOffsetY*/0),
 
 			tsButtonD(/*name*/"bn_D",/*locPos*/Vec2(100, 550), CoordType::Promillage,
 				/*size*/Vec2(500, 100), /*cornerRadius*/100, CoordType::Promillage,
 				Alignment::MidMid,	/*colPanel*/0x00008800, /*colBg*/0x00000000,
-				"Button D", /*buttonFont*/ 2, /*colFont*/ 0x00FFFFFF, /*fontScale*/ 0, Alignment::MidMid),
+				/*bInvertedArea*/false, "Button D", /*buttonFont*/ 2, /*colFont*/ 0x00FFFFFF, /*fontScale*/ 0, Alignment::MidMid,
+			/*lowerCaseOffsetY*/0, /*upperCaseOffsetY*/0),
 
 			tsButtonGroup("group"), // (no constructor parameters, so this line could be left out)
 
