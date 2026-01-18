@@ -11,7 +11,7 @@
 #include <crt_CleanGUI.h>
 #include <crt_IKeyboardListener.h>
 #include <crt_TouchscreenKeyboard.h>
-#include <crt_Inputfield.h>
+#include <crt_InputField.h>
 #include <crt_AsyncDisplay.h>
 #include <crt_TFT_eSPI_DisplayAdapter.h>
 
@@ -58,7 +58,7 @@ namespace crt
 
 			asyncDisplay("AsyncDisplay", 2 /*priority*/, 20000 + CommandBufferSize*sizeof(DisplayCommand)+
 				            MaxNofClientTasks*sizeof(PrintContext) /*stackBytes*/, ARDUINO_RUNNING_CORE, 
-				            tft_eSPI_DisplayAdapter, 0/*rotation*/, 2/*fontTouchCalibration*/),
+				            tft_eSPI_DisplayAdapter, 3/*rotation*/, 2/*fontTouchCalibration*/),
 
 			outputPanel("MenuPanel", /*locPos*/Vec2(0, 0), CoordType::Promillage,
 				/*size*/Vec2(1000, 400), /*cornerRadius*/0, CoordType::Promillage, Alignment::TopLeft,

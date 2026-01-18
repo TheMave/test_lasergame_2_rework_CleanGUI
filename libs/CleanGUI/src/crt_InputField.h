@@ -9,8 +9,8 @@
 #include "crt_ITouchListener.h"
 #include "crt_TouchscreenButtonGroup.h" 
 #include <crt_IButton.h>
-#include <crt_IInputfield.h>
-#include <crt_IInputfieldListener.h>
+#include <crt_IInputField.h>
+#include <crt_IInputFieldListener.h>
 #include <crt_string.h>
 #include <crt_IKeyboard.h>
 

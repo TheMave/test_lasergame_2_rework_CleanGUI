@@ -1,7 +1,7 @@
 // by Marius Versteegen, 2024
 
 #pragma once
-#include "crt_IInputfield.h"
+#include "crt_IInputField.h"
 
 namespace crt
 {
