@@ -45,15 +45,14 @@ void loop() {
 
 namespace crt
 {
+	// Create a "global" logger object within namespace crt.
+	const unsigned int pinButtonDump = 35; // Pressing a button connected to this pin dumps the latest logs to serial monitor.
+	Logger<100> theLogger("Logger", 2 /*priority*/, ARDUINO_RUNNING_CORE, pinButtonDump);
+	ILogger& logger = theLogger; // Global logger instance used by CleanGUI components.
+
 	portMUX_TYPE criticalSectionMutex = portMUX_INITIALIZER_UNLOCKED;	// The one and only mutex for critical sections in my software.
 
 	MainInits mainInits;        // Allow creation of microsecond timers.
-
- 	// Create a "global" logger object withing namespace crt.
-	const unsigned int pinButtonDump = 23;
-	
-	Logger<100> theLogger("Logger", 2 /*priority*/, ARDUINO_RUNNING_CORE, pinButtonDump);
-	ILogger& logger = theLogger;	// This is the global object. It can be accessed without knowledge of the template parameter of theLogger.
 }
 // ********  end of constant part of this .ino file  **************
 

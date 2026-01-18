@@ -171,24 +171,24 @@ namespace crt
 		{
 			//ESP_LOGI("tsb touchpressed first", "%s", this->getName());
 			//vTaskDelay(200);
-			logger.logText("touchPressed");
+			///logger.logText("touchPressed");
 
 			if (!PBase::isEnabled())
 			{
 				return;
 			}
 
-			logger.logText("touchPressed_2");
+			//logger.logText("touchPressed_2");
 			// if bPressed, nothing changes.
 			if (!bPressed)
 			{
-				logger.logText("touchPressed_3");
+				//logger.logText("touchPressed_3");
 				if (isPosInButton(pos))
 				{
 					//ESP_LOGI("tsb touchpressed second", "%s",this->getName());
 					//vTaskDelay(200);
 
-					logger.logText("BnPressed");
+					//logger.logText("BnPressed");
 					bPressed = true;
 					for (int i = 0; i < nofButtonListeners; i++)
 					{

@@ -7,8 +7,10 @@
 
 namespace crt
 {
-	Logger<100> theLogger("Logger", 2 /*priority*/, ARDUINO_RUNNING_CORE, 33 /*pinButtonDump*/);
-	ILogger& logger = theLogger;	// Use "logger" as global logger object. It can be accessed from anywhere without knowledge of the template parameter of theLogger.
+	// Create a "global" logger object within namespace crt.
+	const unsigned int pinButtonDump = 33; // Pressing a button connected to this pin dumps the latest logs to serial monitor.
+	Logger<100> theLogger("Logger", 2 /*priority*/, ARDUINO_RUNNING_CORE, pinButtonDump);
+	ILogger& logger = theLogger; // Global logger instance used by CleanGUI components.
 
 	MainInits mainInits;            // Allow creation of microsecond timers.
 

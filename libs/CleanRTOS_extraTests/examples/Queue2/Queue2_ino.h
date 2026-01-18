@@ -11,12 +11,6 @@
 #include "crt_TestQueue2.h"
 namespace crt
 {
- 	// Create a "global" logger object withing namespace crt.
-	const unsigned int pinButtonDump = 34; // Pressing a button connected to this pin dumps the latest logs to serial monitor.
-	
-	Logger<100> theLogger("Logger", 2 /*priority*/, ARDUINO_RUNNING_CORE, pinButtonDump);
-	ILogger& logger = theLogger;	// This is the global object. It can be accessed without knowledge of the template parameter of theLogger.
-
     MainInits mainInits;            // Initialize CleanRTOS
 
 	StringDisplayTask stringDisplayTask("StringDisplayTask", 2 /*priority*/, 4000 /*stackBytes*/, ARDUINO_RUNNING_CORE); // Don't forget to call its start() memeber during setup().

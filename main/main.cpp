@@ -11,7 +11,17 @@
 // For convenience, I have stored the CMakeLists file in the extra folder, such that
 // it can be copied (from).
 
-#include <Arduino.h>
+#include <Arduino.h> // Only needed if Arduino compatible libraries are used.
+#include <crt_CleanRTOS.h>
+#include <crt_Logger.h>
+
+namespace crt
+{
+	// Create a "global" logger object within namespace crt.
+	const unsigned int pinButtonDump = 35; // Pressing a button connected to this pin dumps the latest logs to serial monitor.
+	Logger<100> theLogger("Logger", 2 /*priority*/, ARDUINO_RUNNING_CORE, pinButtonDump);
+	ILogger& logger = theLogger; // Global logger instance used by CleanGUI components.
+}
 
 // Voorbeeld van een kopie van een voorbeeld uit de ESP-IDF
 //#define CONFIG_EXAMPLE_SCAN_LIST_SIZE 20  // Dit blijkt nodig voor kopie_van_scan_example

@@ -130,12 +130,6 @@ namespace crt
 		}
 	}; // end class
 
-	// Create a "global" logger object withing namespace crt.
-	const unsigned int pinButtonDump = 34; // Pressing a button connected to this pin dumps the latest logs to serial monitor.
-
-	Logger<100> theLogger("Logger", 2 /*priority*/, ARDUINO_RUNNING_CORE, pinButtonDump); // A fast logger for 100 logs.
-	ILogger& logger = theLogger;	// This is the global object. It can be accessed without knowledge of the template parameter of theLogger.
-
 	portMUX_TYPE criticalSectionMutex = portMUX_INITIALIZER_UNLOCKED;	// The one and only mutex for critical sections in my software.
 
 	MainInits mainInits;            // Initialize CleanRTOS.

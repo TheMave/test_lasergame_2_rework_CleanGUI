@@ -9,12 +9,6 @@
 #include "crt_TestHandler.h"
 namespace crt
 {
-	// Create a "global" logger object withing namespace crt.
-	const unsigned int pinButtonDump = 34; // Pressing a button connected to this pin dumps the latest logs to serial monitor.
-
-	Logger<100> theLogger("Logger", 2 /*priority*/, ARDUINO_RUNNING_CORE, pinButtonDump);
-	ILogger& logger = theLogger;	// This is the global object. It can be accessed without knowledge of the template parameter of theLogger.
-
     MainInits mainInits;            // Initialize CleanRTOS.
 	Handler<10 /*MAXLISTENERCOUNT*/> testHCounterHandler("TestHCounterHandler", 2 /*priority*/, ARDUINO_RUNNING_CORE, 1000 /*periodMs*/, 3000 /*batchTimeUs*/); // Don't forget to call its start() member during setup().
 	TestHCounter c0("c0", testHCounterHandler);
