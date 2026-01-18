@@ -33,13 +33,16 @@ namespace crt
 		{
 			TFT_eSPI_FreeFonts<20/*MaxNofFreeFonts*/> freeFonts;		// not used when LOAD_GFXFF is not defined.
 			TFT_eSPI_DisplayAdapter<MaxNofTouchListeners> tft_eSPI_DisplayAdapter(freeFonts, "/TouchCalData1"/*filenameCalibration*/, true/*bRepeatCalibration*/);
-			
+
+			// Initialize the display
+			tft_eSPI_DisplayAdapter.touchCalibrate(3/*rotation*/, 2/*font*/);
+
 			IDisplay& display = tft_eSPI_DisplayAdapter; // To make it evident that the rest of the code is
 			                                      // display independent.
 			PageRoot<1> page1("root",display);
 			
-			Panel<0> panel("panel 1", /*locPos*/Vec2(10, 10), CoordType::Pixels,
-				/*size*/Vec2(50, 50), /*cornerRadius*/5, CoordType::Pixels, Alignment::TopLeft,
+			Panel<0> panel("panel 1", /*locPos*/Vec2(100, 100), CoordType::Pixels,
+				/*size*/Vec2(200, 200), /*cornerRadius*/0, CoordType::Pixels, Alignment::TopLeft,
 				/*colFg*/0x00FF0000, /*colBg*/0x00000000);
 			page1.addChildWidget(panel);
 
