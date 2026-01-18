@@ -303,31 +303,57 @@ namespace crt
                 LITTLEFS.begin();
             }
 
+            ESP_LOGI("DisplayAdapter", "=== Touch Calibration Debug ===");
+            ESP_LOGI("DisplayAdapter", "Constructor parameter bRepeatCalibration: %d", _bRepeatCalibration);
+            ESP_LOGI("DisplayAdapter", "Requested rotation: %d", rotation);
+            ESP_LOGI("DisplayAdapter", "Calibration file: %s", _filenameCalibration);
+
             bool bAskedForRecalibration = false;
-            _bRepeatCalibration = false; // can change below
+            // Don't override _bRepeatCalibration here - it was set in the constructor
             bool bRotationMismatch = false;
 
             // check if calibration file exists and size is correct
             if (LITTLEFS.exists(_filenameCalibration)) {
+                ESP_LOGI("DisplayAdapter", "Calibration file EXISTS");
                 fs::File f = LITTLEFS.open(_filenameCalibration, "r");
                 if (f) {
-                    // Read rotation first, then calibration data
-                    if (f.readBytes((char*)&storedRotation, 1) == 1 &&
-                        f.readBytes((char*)calData, 14) == 14) {
+                    ESP_LOGI("DisplayAdapter", "File opened successfully, file size: %d", f.size());
+                    // Read rotation first, then calibration data byte by byte
+                    int rotRead = f.read();
+                    if (rotRead >= 0) {
+                        storedRotation = (uint8_t)rotRead;
+                        // Read calibration data byte by byte (5 uint16_t values = 10 bytes)
+                        for (int i = 0; i < 5; i++) {
+                            int lsb = f.read();
+                            int msb = f.read();
+                            if (lsb >= 0 && msb >= 0) {
+                                calData[i] = (uint16_t)(lsb | (msb << 8));
+                            }
+                        }
+                    }
+                    ESP_LOGI("DisplayAdapter", "Read rotation=%d", storedRotation);
+
+                    if (rotRead >= 0) {
+                        ESP_LOGI("DisplayAdapter", "Stored rotation: %d, Current rotation: %d", storedRotation, rotation);
+                        ESP_LOGI("DisplayAdapter", "Calibration data: [%d, %d, %d, %d, %d]",
+                                 calData[0], calData[1], calData[2], calData[3], calData[4]);
 
                         if (storedRotation == rotation) {
-                            // Rotation matches, ask user if they want to recalibrate
+                            // Rotation matches, calibration data is valid
                             calDataOK = 1;
-                            _bRepeatCalibration = queryDoYouWantToRecalibrate();
-                            bAskedForRecalibration = true;
+                            ESP_LOGI("DisplayAdapter", "Rotation MATCHES - calibration data is valid");
                         } else {
                             // Rotation mismatch - force recalibration without asking
-                            ESP_LOGI("DisplayAdapter", "Rotation mismatch: stored=%d, current=%d - forcing recalibration", storedRotation, rotation);
+                            ESP_LOGI("DisplayAdapter", "Rotation MISMATCH: stored=%d, current=%d - forcing recalibration", storedRotation, rotation);
                             bRotationMismatch = true;
                             _bRepeatCalibration = true;
                         }
+                    } else {
+                        ESP_LOGE("DisplayAdapter", "Failed to read calibration data properly");
                     }
                     f.close();
+                } else {
+                    ESP_LOGE("DisplayAdapter", "Failed to open calibration file");
                 }
 
                 if (_bRepeatCalibration && !bRotationMismatch)
@@ -343,13 +369,36 @@ namespace crt
                 _bRepeatCalibration = true;
             }
 
+            ESP_LOGI("DisplayAdapter", "Before decision: calDataOK=%d, _bRepeatCalibration=%d", calDataOK, _bRepeatCalibration);
+
             if (calDataOK && !_bRepeatCalibration) {
+                ESP_LOGI("DisplayAdapter", "Using stored calibration - setting touch and asking user");
                 // calibration data valid and rotation matches
+                // Set touch calibration FIRST so we can detect touches
                 _tft.setTouch(calData);
+
+                // Now ask user if they want to recalibrate (touch is now working)
+                _bRepeatCalibration = queryDoYouWantToRecalibrate();
+                bAskedForRecalibration = true;
+                ESP_LOGI("DisplayAdapter", "User response to recalibration query: %d", _bRepeatCalibration);
+
+                // If user requested recalibration, delete the file and recalibrate
+                if (_bRepeatCalibration) {
+                    ESP_LOGI("DisplayAdapter", "User requested recalibration - deleting file");
+                    LITTLEFS.remove(_filenameCalibration);
+                }
+            }
+
+            if (calDataOK && !_bRepeatCalibration) {
+                // User did not request recalibration, we're done
+                ESP_LOGI("DisplayAdapter", "Calibration complete - using stored data");
+                _tft.fillScreen(TFT_BLACK);
             }
             else
             {
                 // data not valid, rotation mismatch, or recalibration requested so recalibrate
+                ESP_LOGI("DisplayAdapter", "PERFORMING CALIBRATION (calDataOK=%d, _bRepeatCalibration=%d)",
+                         calDataOK, _bRepeatCalibration);
                 _tft.fillScreen(TFT_BLACK);
                 _tft.setCursor(20, 0);
                 _tft.setTextFont(2);
@@ -371,11 +420,41 @@ namespace crt
                 _tft.println("Calibration complete!");
 
                 // store data with rotation
-                fs::File f = LITTLEFS.open(_filenameCalibration, "w");
+                ESP_LOGI("DisplayAdapter", "Saving calibration to file: %s", _filenameCalibration);
+                ESP_LOGI("DisplayAdapter", "Saving rotation: %d", rotation);
+                ESP_LOGI("DisplayAdapter", "Saving calibration data: [%d, %d, %d, %d, %d]",
+                         calData[0], calData[1], calData[2], calData[3], calData[4]);
+
+                fs::File f = LITTLEFS.open(_filenameCalibration, FILE_WRITE);
                 if (f) {
-                    f.write((const unsigned char*)&rotation, 1);  // Write rotation first
-                    f.write((const unsigned char*)calData, 14);    // Then calibration data
+                    // Write as individual bytes to ensure binary mode
+                    size_t rotWritten = f.write(rotation);  // Write rotation as single byte
+                    size_t calWritten = 0;
+                    for (int i = 0; i < 5; i++) {
+                        calWritten += f.write((uint8_t)(calData[i] & 0xFF));        // LSB
+                        calWritten += f.write((uint8_t)((calData[i] >> 8) & 0xFF)); // MSB
+                    }
                     f.close();
+                    ESP_LOGI("DisplayAdapter", "Written %d rotation bytes, %d calibration bytes",
+                             rotWritten, calWritten);
+                    ESP_LOGI("DisplayAdapter", "Calibration file saved successfully");
+
+                    // Verify what was written by reading it back
+                    f = LITTLEFS.open(_filenameCalibration, FILE_READ);
+                    if (f) {
+                        uint8_t verifyRot = f.read();
+                        uint16_t verifyCal[5];
+                        for (int i = 0; i < 5; i++) {
+                            int lsb = f.read();
+                            int msb = f.read();
+                            verifyCal[i] = (uint16_t)(lsb | (msb << 8));
+                        }
+                        f.close();
+                        ESP_LOGI("DisplayAdapter", "VERIFY: Read back rotation=%d, calData=[%d, %d, %d, %d, %d]",
+                                 verifyRot, verifyCal[0], verifyCal[1], verifyCal[2], verifyCal[3], verifyCal[4]);
+                    }
+                } else {
+                    ESP_LOGE("DisplayAdapter", "FAILED to open calibration file for writing!");
                 }
             }
 

@@ -48,7 +48,7 @@ namespace crt
 
 			asyncDisplay("AsyncDisplay", 2 /*priority*/, 20000 + CommandBufferSize*sizeof(DisplayCommand)+
 				            MaxNofClientTasks*sizeof(PrintContext) /*stackBytes*/, ARDUINO_RUNNING_CORE,
-				            tft_eSPI_DisplayAdapter, 0/*rotation*/, 2/*fontTouchCalibration*/),
+				            tft_eSPI_DisplayAdapter, 3/*rotation*/, 2/*fontTouchCalibration*/),
 
 			// fontScale=0 triggers automatical matching of fontscale with the button height.
 			tsButtonA(/*name*/"bn_A",/*locPos*/Vec2(100, 100), CoordType::Promillage,
