@@ -32,10 +32,10 @@ namespace crt
 		void main()
 		{
 			TFT_eSPI_FreeFonts<20/*MaxNofFreeFonts*/> freeFonts;		// not used when LOAD_GFXFF is not defined.
-			TFT_eSPI_DisplayAdapter<MaxNofTouchListeners> tft_eSPI_DisplayAdapter(freeFonts, "/TouchCalData1"/*filenameCalibration*/, true/*bRepeatCalibration*/);
+			TFT_eSPI_DisplayAdapter<MaxNofTouchListeners> tft_eSPI_DisplayAdapter(freeFonts, "/TouchCalData1"/*filenameCalibration*/, false/*bRepeatCalibration*/);
 
-			// Initialize the display
-			tft_eSPI_DisplayAdapter.touchCalibrate(3/*rotation*/, 2/*font*/);
+			// Initialize the display without calibration (since we don't need touch for this example)
+			tft_eSPI_DisplayAdapter.begin(3/*rotation*/);
 
 			IDisplay& display = tft_eSPI_DisplayAdapter; // To make it evident that the rest of the code is
 			                                      // display independent.

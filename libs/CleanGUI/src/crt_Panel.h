@@ -94,8 +94,8 @@ namespace crt
 
 			Vec2 pos = WBase::getGlobPosOfParent() + WBase::getLocPosPix();
 			Vec2 size = WBase::getSizePix();
-			ESP_LOGI("Panel", "showPanel called: pos(%ld,%ld) size(%ld,%ld) colFg=0x%08lX cornerRadius=%ld",
-				(long)pos.x, (long)pos.y, (long)size.x, (long)size.y, (unsigned long)_colFg, (long)_cornerRadiusPix);
+			//ESP_LOGI("Panel", "showPanel called: pos(%ld,%ld) size(%ld,%ld) colFg=0x%08lX cornerRadius=%ld",
+			//	(long)pos.x, (long)pos.y, (long)size.x, (long)size.y, (unsigned long)_colFg, (long)_cornerRadiusPix);
 
 			if (_cornerRadiusPix > 0)
 			{

@@ -50,6 +50,15 @@ namespace crt
             _rotation(0)
         {}
 
+        // Simple initialization without calibration - useful for non-touch scenarios
+        void begin(uint8_t rotation)
+        {
+            _rotation = rotation;
+            _tft.begin();
+            _tft.setRotation(rotation);
+            _tft.fillScreen(TFT_BLACK);
+        }
+
         /*override*/ void pollTouch(void* pCallingTask)
         {
 #ifdef TOUCH_DEBUG_DIRECT
@@ -308,8 +317,9 @@ namespace crt
             ESP_LOGI("DisplayAdapter", "Requested rotation: %d", rotation);
             ESP_LOGI("DisplayAdapter", "Calibration file: %s", _filenameCalibration);
 
+            // Save the ORIGINAL constructor parameter BEFORE any modifications
+            bool bConstructorRequestedRecalibration = _bRepeatCalibration;
             bool bAskedForRecalibration = false;
-            // Don't override _bRepeatCalibration here - it was set in the constructor
             bool bRotationMismatch = false;
 
             // check if calibration file exists and size is correct
@@ -369,23 +379,29 @@ namespace crt
                 _bRepeatCalibration = true;
             }
 
-            ESP_LOGI("DisplayAdapter", "Before decision: calDataOK=%d, _bRepeatCalibration=%d", calDataOK, _bRepeatCalibration);
+            ESP_LOGI("DisplayAdapter", "Before decision: calDataOK=%d, _bRepeatCalibration=%d, constructor=%d",
+                     calDataOK, _bRepeatCalibration, bConstructorRequestedRecalibration);
 
             if (calDataOK && !_bRepeatCalibration) {
-                ESP_LOGI("DisplayAdapter", "Using stored calibration - setting touch and asking user");
+                ESP_LOGI("DisplayAdapter", "Using stored calibration - setting touch");
                 // calibration data valid and rotation matches
                 // Set touch calibration FIRST so we can detect touches
                 _tft.setTouch(calData);
 
-                // Now ask user if they want to recalibrate (touch is now working)
-                _bRepeatCalibration = queryDoYouWantToRecalibrate();
-                bAskedForRecalibration = true;
-                ESP_LOGI("DisplayAdapter", "User response to recalibration query: %d", _bRepeatCalibration);
+                // Ask user if they want to recalibrate (unless constructor forced it)
+                if (!bConstructorRequestedRecalibration) {
+                    ESP_LOGI("DisplayAdapter", "Asking user if they want to recalibrate");
+                    _bRepeatCalibration = queryDoYouWantToRecalibrate();
+                    bAskedForRecalibration = true;
+                    ESP_LOGI("DisplayAdapter", "User response to recalibration query: %d", _bRepeatCalibration);
 
-                // If user requested recalibration, delete the file and recalibrate
-                if (_bRepeatCalibration) {
-                    ESP_LOGI("DisplayAdapter", "User requested recalibration - deleting file");
-                    LITTLEFS.remove(_filenameCalibration);
+                    // If user requested recalibration, delete the file and recalibrate
+                    if (_bRepeatCalibration) {
+                        ESP_LOGI("DisplayAdapter", "User requested recalibration - deleting file");
+                        LITTLEFS.remove(_filenameCalibration);
+                    }
+                } else {
+                    ESP_LOGI("DisplayAdapter", "Constructor forced recalibration - skipping user prompt");
                 }
             }
 

@@ -4,13 +4,13 @@
 #include <Arduino.h>
 #include <crt_CleanRTOS.h>
 #include <crt_CleanGUI.h>
+#include <crt_AsyncDisplay.h>
 #include <crt_TFT_eSPI_DisplayAdapter.h>
+#include <crt_TFT_eSPI_FreeFonts.h>
 
 #ifdef LOAD_GFXFF
 #include <Free_Fonts.h>
 #endif
-
-#include <FreeFonts.h>
 
 //#include "crt_string.h"
 
@@ -23,16 +23,16 @@ namespace crt
 		static const int MaxNofTouchListeners = 20;
 
 	private:
-		FreeFonts<20/*MaxNofFreeFonts*/> freeFonts;		// not used when LOAD_GFXFF is not defined.
+		TFT_eSPI_FreeFonts<20/*MaxNofFreeFonts*/> freeFonts;		// not used when LOAD_GFXFF is not defined.
 		TFT_eSPI_DisplayAdapter<MaxNofTouchListeners> tft_eSPI_DisplayAdapter;
 		AsyncDisplay<CommandBufferSize, MaxNofClientTasks> displayControl;
 
 	public:
 		TestAsyncDisplay(const char *taskName, unsigned int taskPriority, unsigned int taskSizeBytes, unsigned int taskCoreNumber) :
-			Task(taskName, taskPriority, taskSizeBytes, taskCoreNumber),tft(),
+			Task(taskName, taskPriority, taskSizeBytes, taskCoreNumber),
 			tft_eSPI_DisplayAdapter(freeFonts, "/TouchCalData1"/*filenameCalibration*/, false/*bRepeatCalibration*/),
 			displayControl("AsyncDisplay", 2 /*priority*/, 10000 + CommandBufferSize*sizeof(DisplayCommand)+
-				            MaxNofClientTasks*sizeof(PrintContext) /*stackBytes*/, ARDUINO_RUNNING_CORE, tft_eSPI_DisplayAdapter)
+				            MaxNofClientTasks*sizeof(PrintContext) /*stackBytes*/, ARDUINO_RUNNING_CORE, tft_eSPI_DisplayAdapter, 3/*rotation*/, 2/*fontTouchCalibration*/)
 		{
 			start(); // For simplicity, the task is started right away in it's constructor.
 		}
@@ -48,10 +48,10 @@ namespace crt
 
 			IDisplay& display = displayControl;   // To make it evident that the rest of the code is
 			                                      // display independent.
-			PageRoot<1> page1(display);
-			
-			Panel<12> panel(/*locPos*/Vec2(0, 0), CoordType::Pixels,
-				/*size*/Vec2(100, 100), CoordType::Pixels, Alignment::TopLeft,
+			PageRoot<1> page1("root", display);
+
+			Panel<12> panel("panel", /*locPos*/Vec2(0, 0), CoordType::Pixels,
+				/*size*/Vec2(100, 100), /*cornerRadius*/0, CoordType::Pixels, Alignment::TopLeft,
 				/*colFg*/0x00FF0000, /*colBg*/0x00000000);
 			page1.addChildWidget(panel);
 
