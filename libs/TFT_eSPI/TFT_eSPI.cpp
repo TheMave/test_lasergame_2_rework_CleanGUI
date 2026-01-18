@@ -672,7 +672,9 @@ void TFT_eSPI::init(uint8_t tc)
 #ifdef TFT_RST
   #if !defined(RP2040_PIO_INTERFACE)
     // Set to output once again in case MISO is used for TFT_RST
-    pinMode(TFT_RST, OUTPUT);
+    if (TFT_RST >= 0) {
+      pinMode(TFT_RST, OUTPUT);
+    }
   #endif
   if (TFT_RST >= 0) {
     writecommand(0x00); // Put SPI bus in known state for TFT with CS tied low

@@ -5,6 +5,51 @@
 
 // A demo is provided in examples Generic folder
 
+// Optional: use separate bit-banged SPI pins for touch (e.g. CYD esp32-2432S028R)
+#if defined(TOUCH_MOSI) && defined(TOUCH_MISO) && defined(TOUCH_SCLK)
+static bool touch_pins_initialized = false;
+
+static inline void touch_pins_init()
+{
+  if (touch_pins_initialized) return;
+
+  pinMode(TOUCH_MOSI, OUTPUT);
+  pinMode(TOUCH_MISO, INPUT);
+  pinMode(TOUCH_SCLK, OUTPUT);
+
+  #ifdef TOUCH_IRQ
+    pinMode(TOUCH_IRQ, INPUT);
+  #endif
+
+  digitalWrite(TOUCH_SCLK, HIGH);
+  touch_pins_initialized = true;
+}
+
+static inline uint8_t touch_spi_transfer(uint8_t data)
+{
+  uint8_t ret = 0;
+  for (uint8_t i = 0; i < 8; i++)
+  {
+    digitalWrite(TOUCH_MOSI, (data & 0x80) ? HIGH : LOW);
+    digitalWrite(TOUCH_SCLK, LOW);
+    delayMicroseconds(1);
+    ret <<= 1;
+    if (digitalRead(TOUCH_MISO)) ret |= 1;
+    digitalWrite(TOUCH_SCLK, HIGH);
+    delayMicroseconds(1);
+    data <<= 1;
+  }
+  return ret;
+}
+
+static inline uint16_t touch_spi_transfer16(uint16_t data)
+{
+  uint16_t hi = touch_spi_transfer((uint8_t)(data >> 8));
+  uint16_t lo = touch_spi_transfer((uint8_t)(data & 0xFF));
+  return (uint16_t)((hi << 8) | lo);
+}
+#endif
+
 // Additions by Bodmer to double sample, use Z value to improve detection reliability
 // and to correct rotation handling
 
@@ -18,12 +63,18 @@
 inline void TFT_eSPI::begin_touch_read_write(void){
   DMA_BUSY_CHECK;
   CS_H; // Just in case it has been left low
-  #if defined (SPI_HAS_TRANSACTION) && defined (SUPPORT_TRANSACTIONS)
-    if (locked) {locked = false; spi.beginTransaction(SPISettings(SPI_TOUCH_FREQUENCY, MSBFIRST, SPI_MODE0));}
+
+  #if defined(TOUCH_MOSI) && defined(TOUCH_MISO) && defined(TOUCH_SCLK)
+    touch_pins_init();
   #else
-    spi.setFrequency(SPI_TOUCH_FREQUENCY);
+    #if defined (SPI_HAS_TRANSACTION) && defined (SUPPORT_TRANSACTIONS)
+      if (locked) {locked = false; spi.beginTransaction(SPISettings(SPI_TOUCH_FREQUENCY, MSBFIRST, SPI_MODE0));}
+    #else
+      spi.setFrequency(SPI_TOUCH_FREQUENCY);
+    #endif
+    SET_BUS_READ_MODE;
   #endif
-  SET_BUS_READ_MODE;
+
   T_CS_L;
 }
 
@@ -33,10 +84,15 @@ inline void TFT_eSPI::begin_touch_read_write(void){
 ***************************************************************************************/
 inline void TFT_eSPI::end_touch_read_write(void){
   T_CS_H;
-  #if defined (SPI_HAS_TRANSACTION) && defined (SUPPORT_TRANSACTIONS)
-    if(!inTransaction) {if (!locked) {locked = true; spi.endTransaction();}}
+
+  #if defined(TOUCH_MOSI) && defined(TOUCH_MISO) && defined(TOUCH_SCLK)
+    // Bit-banged touch, no SPI transaction to end
   #else
-    spi.setFrequency(SPI_FREQUENCY);
+    #if defined (SPI_HAS_TRANSACTION) && defined (SUPPORT_TRANSACTIONS)
+      if(!inTransaction) {if (!locked) {locked = true; spi.endTransaction();}}
+    #else
+      spi.setFrequency(SPI_FREQUENCY);
+    #endif
   #endif
   //SET_BUS_WRITE_MODE;
 }
@@ -58,31 +114,58 @@ uint8_t TFT_eSPI::getTouchRaw(uint16_t *x, uint16_t *y){
   begin_touch_read_write();
   
   // Start YP sample request for x position, read 4 times and keep last sample
-  spi.transfer(0xd0);                    // Start new YP conversion
-  spi.transfer(0);                       // Read first 8 bits
-  spi.transfer(0xd0);                    // Read last 8 bits and start new YP conversion
-  spi.transfer(0);                       // Read first 8 bits
-  spi.transfer(0xd0);                    // Read last 8 bits and start new YP conversion
-  spi.transfer(0);                       // Read first 8 bits
-  spi.transfer(0xd0);                    // Read last 8 bits and start new YP conversion
+  #if defined(TOUCH_MOSI) && defined(TOUCH_MISO) && defined(TOUCH_SCLK)
+    touch_spi_transfer(0xd0);              // Start new YP conversion
+    touch_spi_transfer(0);                 // Read first 8 bits
+    touch_spi_transfer(0xd0);              // Read last 8 bits and start new YP conversion
+    touch_spi_transfer(0);                 // Read first 8 bits
+    touch_spi_transfer(0xd0);              // Read last 8 bits and start new YP conversion
+    touch_spi_transfer(0);                 // Read first 8 bits
+    touch_spi_transfer(0xd0);              // Read last 8 bits and start new YP conversion
 
-  tmp = spi.transfer(0);                   // Read first 8 bits
-  tmp = tmp <<5;
-  tmp |= 0x1f & (spi.transfer(0x90)>>3);   // Read last 8 bits and start new XP conversion
+    tmp = touch_spi_transfer(0);           // Read first 8 bits
+    tmp = tmp <<5;
+    tmp |= 0x1f & (touch_spi_transfer(0x90)>>3); // Read last 8 bits and start new XP conversion
+  #else
+    spi.transfer(0xd0);                    // Start new YP conversion
+    spi.transfer(0);                       // Read first 8 bits
+    spi.transfer(0xd0);                    // Read last 8 bits and start new YP conversion
+    spi.transfer(0);                       // Read first 8 bits
+    spi.transfer(0xd0);                    // Read last 8 bits and start new YP conversion
+    spi.transfer(0);                       // Read first 8 bits
+    spi.transfer(0xd0);                    // Read last 8 bits and start new YP conversion
+
+    tmp = spi.transfer(0);                   // Read first 8 bits
+    tmp = tmp <<5;
+    tmp |= 0x1f & (spi.transfer(0x90)>>3);   // Read last 8 bits and start new XP conversion
+  #endif
 
   *x = tmp;
 
   // Start XP sample request for y position, read 4 times and keep last sample
-  spi.transfer(0);                       // Read first 8 bits
-  spi.transfer(0x90);                    // Read last 8 bits and start new XP conversion
-  spi.transfer(0);                       // Read first 8 bits
-  spi.transfer(0x90);                    // Read last 8 bits and start new XP conversion
-  spi.transfer(0);                       // Read first 8 bits
-  spi.transfer(0x90);                    // Read last 8 bits and start new XP conversion
+  #if defined(TOUCH_MOSI) && defined(TOUCH_MISO) && defined(TOUCH_SCLK)
+    touch_spi_transfer(0);               // Read first 8 bits
+    touch_spi_transfer(0x90);            // Read last 8 bits and start new XP conversion
+    touch_spi_transfer(0);               // Read first 8 bits
+    touch_spi_transfer(0x90);            // Read last 8 bits and start new XP conversion
+    touch_spi_transfer(0);               // Read first 8 bits
+    touch_spi_transfer(0x90);            // Read last 8 bits and start new XP conversion
 
-  tmp = spi.transfer(0);                 // Read first 8 bits
-  tmp = tmp <<5;
-  tmp |= 0x1f & (spi.transfer(0)>>3);    // Read last 8 bits
+    tmp = touch_spi_transfer(0);         // Read first 8 bits
+    tmp = tmp <<5;
+    tmp |= 0x1f & (touch_spi_transfer(0)>>3);  // Read last 8 bits
+  #else
+    spi.transfer(0);                       // Read first 8 bits
+    spi.transfer(0x90);                    // Read last 8 bits and start new XP conversion
+    spi.transfer(0);                       // Read first 8 bits
+    spi.transfer(0x90);                    // Read last 8 bits and start new XP conversion
+    spi.transfer(0);                       // Read first 8 bits
+    spi.transfer(0x90);                    // Read last 8 bits and start new XP conversion
+
+    tmp = spi.transfer(0);                 // Read first 8 bits
+    tmp = tmp <<5;
+    tmp |= 0x1f & (spi.transfer(0)>>3);    // Read last 8 bits
+  #endif
 
   *y = tmp;
 
@@ -101,9 +184,15 @@ uint16_t TFT_eSPI::getTouchRawZ(void){
 
   // Z sample request
   int16_t tz = 0xFFF;
-  spi.transfer(0xb0);               // Start new Z1 conversion
-  tz += spi.transfer16(0xc0) >> 3;  // Read Z1 and start Z2 conversion
-  tz -= spi.transfer16(0x00) >> 3;  // Read Z2
+  #if defined(TOUCH_MOSI) && defined(TOUCH_MISO) && defined(TOUCH_SCLK)
+    touch_spi_transfer(0xb0);               // Start new Z1 conversion
+    tz += touch_spi_transfer16(0xc0) >> 3;  // Read Z1 and start Z2 conversion
+    tz -= touch_spi_transfer16(0x00) >> 3;  // Read Z2
+  #else
+    spi.transfer(0xb0);               // Start new Z1 conversion
+    tz += spi.transfer16(0xc0) >> 3;  // Read Z1 and start Z2 conversion
+    tz -= spi.transfer16(0x00) >> 3;  // Read Z2
+  #endif
 
   end_touch_read_write();
 

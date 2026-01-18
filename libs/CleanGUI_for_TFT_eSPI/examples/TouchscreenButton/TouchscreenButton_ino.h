@@ -1,11 +1,17 @@
 // by Marius Versteegen, 2023
 
 #include <crt_CleanRTOS.h>        // This file includes crt_Config.h  You'll need to change defines there for a release build.
+#include <crt_Logger.h>            // Required for Logger<> template class
 
 // All Tasks should be created in this main file.
 #include "crt_TestTouchscreenButton.h"
 namespace crt
 {
+	// Create a "global" logger object within namespace crt.
+	const unsigned int pinButtonDump = 35; // Pressing a button connected to this pin dumps the latest logs to serial monitor.
+	Logger<100> theLogger("Logger", 2 /*priority*/, ARDUINO_RUNNING_CORE, pinButtonDump);
+	ILogger& logger = theLogger; // Global logger instance used by CleanGUI components.
+
 	MainInits mainInits;            // Initialize CleanRTOS.
 }
 

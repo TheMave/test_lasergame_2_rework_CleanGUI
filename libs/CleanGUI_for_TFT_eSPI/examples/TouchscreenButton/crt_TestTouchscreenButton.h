@@ -6,13 +6,12 @@
 #include <crt_CleanGUI.h>
 #include <crt_AsyncDisplay.h>
 #include <crt_TouchscreenButton.h>
-//#include <crt_TFT_eSPI_DisplayAdapter.h>
+#include <crt_TFT_eSPI_DisplayAdapter.h>
+#include <crt_TFT_eSPI_FreeFonts.h>
 
 #ifdef LOAD_GFXFF
 #include <Free_Fonts.h>
 #endif
-
-//#include <crt_TFT_eSPI_FreeFonts.h>
 
 namespace crt
 {
@@ -49,12 +48,14 @@ namespace crt
 			tsButtonA("bn A",/*locPos*/Vec2(100, 100), CoordType::Promillage,
 				/*size*/Vec2(500, 100), /*cornerRadius*/100, CoordType::Promillage,
 				Alignment::MidMid,	/*colPanel*/0x00FF0000, /*colBg*/0x00000000,
-				"Button A", /*buttonFont*/ 2, /*colFont*/ 0x00FFFFFF, /*fontScale*/ 0, Alignment::MidMid),
+				/*bInvertedArea*/false, "Button A", /*buttonFont*/ 2, /*colFont*/ 0x00FFFFFF, /*fontScale*/ 0, Alignment::MidMid,
+			/*lowerCaseOffsetY*/0, /*upperCaseOffsetY*/0),
 
 			tsButtonB("bn B",/*locPos*/Vec2(100, 250), CoordType::Promillage,
 				/*size*/Vec2(500, 100), /*cornerRadius*/100, CoordType::Promillage,
 				Alignment::MidMid,	/*colPanel*/0x00FF0000, /*colBg*/0x00000000,
-				"Button B", /*buttonFont*/ 2, /*colFont*/ 0x00FFFFFF, /*fontScale*/ 0, Alignment::MidMid),
+				/*bInvertedArea*/false, "Button B", /*buttonFont*/ 2, /*colFont*/ 0x00FFFFFF, /*fontScale*/ 0, Alignment::MidMid,
+			/*lowerCaseOffsetY*/0, /*upperCaseOffsetY*/0),
 
 			flagBnAPressed(this), flagBnAReleased(this),
 			flagBnBPressed(this), flagBnBReleased(this)

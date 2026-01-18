@@ -42,7 +42,8 @@
 //#define RPI_DISPLAY_TYPE // 20MHz maximum SPI
 
 // Only define one driver, the other ones must be commented out
-//#define ILI9341_DRIVER       // Generic driver for common displays
+// CYD (Cheap Yellow Display) uses ILI9341
+#define ILI9341_DRIVER       // Generic driver for common displays
 //#define ILI9341_2_DRIVER     // Alternative ILI9341 driver, see https://github.com/Bodmer/TFT_eSPI/issues/1172
 //#define ST7735_DRIVER      // Define additional parameters below for this display
 //#define ILI9163_DRIVER     // Define additional parameters below for this display
@@ -51,7 +52,7 @@
 //#define HX8357D_DRIVER
 //#define ILI9481_DRIVER
 //#define ILI9486_DRIVER
-#define ILI9488_DRIVER     // WARNING: Do not connect ILI9488 display SDO to MISO if other devices share the SPI bus (TFT SDO does NOT tristate when CS is high)
+//#define ILI9488_DRIVER     // WARNING: Do not connect ILI9488 display SDO to MISO if other devices share the SPI bus (TFT SDO does NOT tristate when CS is high)
 //#define ST7789_DRIVER      // Full configuration option, define additional parameters below for this display
 //#define ST7789_2_DRIVER    // Minimal configuration option, define additional parameters below for this display
 //#define R61581_DRIVER
@@ -203,13 +204,14 @@
 // For ESP32 Dev board (only tested with ILI9341 display)
 // The hardware SPI can be mapped to any pins
 
-#define TFT_MISO 19
-#define TFT_MOSI 23
-#define TFT_SCLK 18
+#define TFT_MISO 12
+#define TFT_MOSI 13
+#define TFT_SCLK 14
 #define TFT_CS   15  // Chip select control pin
 #define TFT_DC    2  // Data Command control pin
-#define TFT_RST   4  // Reset pin (could connect to RST pin)
-//#define TFT_RST  -1  // Set TFT_RST to -1 if display RESET is connected to ESP32 board RST
+#define TFT_RST  -1  // Reset pin (tied to reset or 3.3V)
+#define TFT_BL   21  // LED back-light
+#define TFT_BACKLIGHT_ON HIGH
 
 // For ESP32 Dev board (only tested with GC9A01 display)
 // The hardware SPI can be mapped to any pins
@@ -221,7 +223,22 @@
 //#define TFT_RST  33  // Reset pin (could connect to Arduino RESET pin)
 //#define TFT_BL   22  // LED back-light
 
-#define TOUCH_CS 21     // Chip select pin (T_CS) of touch screen
+#define TOUCH_CS 33     // Chip select pin (T_CS) of touch screen (CYD: XPT2046)
+// CYD (esp32-2432S028R) uses a separate SPI bus for touch (bit-banged)
+#define TOUCH_MOSI 32
+#define TOUCH_MISO 39
+#define TOUCH_SCLK 25
+#define TOUCH_IRQ  36
+// Lower pressure threshold helps some CYD panels register touches reliably
+#define TOUCH_THRESHOLD 350
+// Debug: draw touch points and log coordinates when a touch is detected
+#define TOUCH_DEBUG_DRAW
+// Debug: direct touch read in display adapter
+#define TOUCH_DEBUG_DIRECT
+// Debug: log touch polling ticks from AsyncDisplay
+#define TOUCH_DEBUG_POLL
+// Skip interactive calibration in CleanGUI (use file or default values)
+//#define TOUCH_SKIP_CALIBRATION
 
 //#define TFT_WR 22    // Write strobe for modified Raspberry Pi TFT only
 

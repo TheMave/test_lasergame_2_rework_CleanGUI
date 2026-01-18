@@ -266,6 +266,7 @@ namespace crt
 		{
 		    esp_rom_gpio_pad_select_gpio(pinButtonDump);
 			gpio_set_direction((gpio_num_t)pinButtonDump, GPIO_MODE_INPUT);
+			gpio_set_pull_mode((gpio_num_t)pinButtonDump, GPIO_PULLUP_ONLY);
 
 			logText("StackBytes Reserved for Logger:");
 			logInt32(taskStackSizeBytes);

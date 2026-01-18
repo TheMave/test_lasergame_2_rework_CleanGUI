@@ -40,11 +40,11 @@
 // **** .CleanGUI related Tests ****
 //#include <Vec2.ino>
 //#include <Panel.ino>
-#include <Button_demo.ino>
+//#include <Button_demo.ino>
 //#include <AsyncDisplay.ino>
 //#include <Free_Font_Demo.ino>
 //#include "TestButton.ino"
-//#include <TouchscreenButton.ino>
+#include <TouchscreenButton.ino>
 //#include <TouchscreenButtonGroup.ino>
 //#include <TouchscreenKeyboard.ino>
 //#include <Inputfield.ino>

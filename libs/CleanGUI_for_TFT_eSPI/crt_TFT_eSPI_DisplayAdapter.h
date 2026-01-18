@@ -10,7 +10,7 @@
 //#include "Free_Fonts.h" // Include the header file attached to this sketch
 #include <crt_TFT_eSPI_IFreeFonts.h>
 #include <TFT_eSPI.h>     // Hardware-specific library
-#include <crt_tft_eSPI_TouchDetector.h>
+#include <crt_TFT_eSPI_TouchDetector.h>
 #include <crt_IDisplay.h>
 #include <crt_Vec2.h>
 #include <User_Setup.h>   // In that file, LOAD_GFXFF determines availability of free fonts.
@@ -52,6 +52,20 @@ namespace crt
 
         /*override*/ void pollTouch(void* pCallingTask)
         {
+#ifdef TOUCH_DEBUG_DIRECT
+            uint16_t x_tmp = 0, y_tmp = 0;
+            #if defined(TOUCH_THRESHOLD)
+                bool pressed = _tft.getTouch(&x_tmp, &y_tmp, TOUCH_THRESHOLD);
+            #else
+                bool pressed = _tft.getTouch(&x_tmp, &y_tmp);
+            #endif
+            if (pressed)
+            {
+                //_tft.fillCircle(x_tmp, y_tmp, 2, TFT_YELLOW);
+                //logger.logText("Press detected");
+                //ESP_LOGI("DisplayAdapter", "touch direct: %u,%u", (unsigned)x_tmp, (unsigned)y_tmp);
+            }
+#endif
             _touchDetector.update(pCallingTask);
         }
 
@@ -249,10 +263,38 @@ namespace crt
             _tft.begin();
             _tft.setRotation(rotation);
             _tft.fillScreen(TFT_BLACK);
-            _tft.setTextFont(font);  //tft.setFreeFont(FF18);	
+            _tft.setTextFont(font);  //tft.setFreeFont(FF18);
+
+#ifdef TOUCH_SKIP_CALIBRATION
+            // Skip interactive calibration (prevents blocking if touch is not yet working)
+            uint16_t calData[5] = { 300, 3600, 300, 3600, 0 };
+            if (!LITTLEFS.begin()) {
+                LITTLEFS.format();
+                LITTLEFS.begin();
+            }
+            if (LITTLEFS.exists(_filenameCalibration)) {
+                fs::File f = LITTLEFS.open(_filenameCalibration, "r");
+                if (f) {
+                    uint8_t storedRotation;
+                    if (f.readBytes((char*)&storedRotation, 1) == 1 &&
+                        f.readBytes((char*)calData, 14) == 14 &&
+                        storedRotation == rotation) {
+                        _tft.setTouch(calData);
+                        f.close();
+                        _tft.fillScreen(TFT_BLACK);
+                        return;
+                    }
+                    f.close();
+                }
+            }
+            _tft.setTouch(calData);
+            _tft.fillScreen(TFT_BLACK);
+            return;
+#else
 
             uint16_t calData[5];
             uint8_t calDataOK = 0;
+            uint8_t storedRotation = 0xFF; // Invalid value to indicate no valid rotation stored
 
             // check file system exists
             if (!LITTLEFS.begin()) {
@@ -263,40 +305,51 @@ namespace crt
 
             bool bAskedForRecalibration = false;
             _bRepeatCalibration = false; // can change below
+            bool bRotationMismatch = false;
 
             // check if calibration file exists and size is correct
             if (LITTLEFS.exists(_filenameCalibration)) {
-                _bRepeatCalibration = queryDoYouWantToRecalibrate();
-                bAskedForRecalibration = true;
+                fs::File f = LITTLEFS.open(_filenameCalibration, "r");
+                if (f) {
+                    // Read rotation first, then calibration data
+                    if (f.readBytes((char*)&storedRotation, 1) == 1 &&
+                        f.readBytes((char*)calData, 14) == 14) {
 
-                if (_bRepeatCalibration)
+                        if (storedRotation == rotation) {
+                            // Rotation matches, ask user if they want to recalibrate
+                            calDataOK = 1;
+                            _bRepeatCalibration = queryDoYouWantToRecalibrate();
+                            bAskedForRecalibration = true;
+                        } else {
+                            // Rotation mismatch - force recalibration without asking
+                            ESP_LOGI("DisplayAdapter", "Rotation mismatch: stored=%d, current=%d - forcing recalibration", storedRotation, rotation);
+                            bRotationMismatch = true;
+                            _bRepeatCalibration = true;
+                        }
+                    }
+                    f.close();
+                }
+
+                if (_bRepeatCalibration && !bRotationMismatch)
                 {
-                    // Delete if we want to re-calibrate
+                    // Delete if user requested re-calibration
                     LITTLEFS.remove(_filenameCalibration);
                 }
-                else
-                {
-                    fs::File f = LITTLEFS.open(_filenameCalibration, "r");
-                    if (f) {
-                        if (f.readBytes((char*)calData, 14) == 14)
-                            calDataOK = 1;
-                        f.close();
-                    }
-                }
             }
-
-            if (calDataOK && !bAskedForRecalibration)
+            else
             {
-                _bRepeatCalibration = queryDoYouWantToRecalibrate();
+                // File doesn't exist - force recalibration without asking
+                ESP_LOGI("DisplayAdapter", "Calibration file not found - forcing recalibration");
+                _bRepeatCalibration = true;
             }
 
             if (calDataOK && !_bRepeatCalibration) {
-                // calibration data valid
+                // calibration data valid and rotation matches
                 _tft.setTouch(calData);
             }
-            else 
+            else
             {
-                // data not valid or recalibration requested so recalibrate
+                // data not valid, rotation mismatch, or recalibration requested so recalibrate
                 _tft.fillScreen(TFT_BLACK);
                 _tft.setCursor(20, 0);
                 _tft.setTextFont(2);
@@ -308,7 +361,7 @@ namespace crt
                 _tft.setTextFont(1);
                 _tft.println();
 
-                if (_bRepeatCalibration) {
+                if (_bRepeatCalibration && bAskedForRecalibration) {
                     _tft.setTextColor(TFT_RED, TFT_BLACK);
                 }
 
@@ -317,15 +370,17 @@ namespace crt
                 _tft.setTextColor(TFT_GREEN, TFT_BLACK);
                 _tft.println("Calibration complete!");
 
-                // store data
+                // store data with rotation
                 fs::File f = LITTLEFS.open(_filenameCalibration, "w");
                 if (f) {
-                    f.write((const unsigned char*)calData, 14);
+                    f.write((const unsigned char*)&rotation, 1);  // Write rotation first
+                    f.write((const unsigned char*)calData, 14);    // Then calibration data
                     f.close();
                 }
             }
 
             _tft.fillScreen(TFT_BLACK);
+#endif
         }
 
     private:

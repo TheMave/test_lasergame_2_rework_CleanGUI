@@ -4,6 +4,7 @@
 // https://github.com/Bodmer/TFT_eWidget
 
 #include <FS.h>
+#include <LITTLEFS.h>
 #include "Free_Fonts.h" // Include the header file attached to this sketch
 
 #include <TFT_eSPI.h>              // Hardware-specific library
@@ -16,6 +17,11 @@ TFT_eSPI tft = TFT_eSPI();         // Invoke custom library
 
 ButtonWidget btnL = ButtonWidget(&tft);
 ButtonWidget btnR = ButtonWidget(&tft);
+
+static char btn_label[] = "Button";
+static char off_label[] = "OFF";
+
+void touch_calibrate();
 
 #define BUTTON_W 100
 #define BUTTON_H 50
@@ -76,13 +82,13 @@ void btnR_releaseAction(void)
 void initButtons() {
   uint16_t x = (tft.width() - BUTTON_W) / 2;
   uint16_t y = tft.height() / 2 - BUTTON_H - 10;
-  btnL.initButtonUL(x, y, BUTTON_W, BUTTON_H, TFT_WHITE, TFT_RED, TFT_BLACK, "Button", 1);
+  btnL.initButtonUL(x, y, BUTTON_W, BUTTON_H, TFT_WHITE, TFT_RED, TFT_BLACK, btn_label, 1);
   btnL.setPressAction(btnL_pressAction);
   btnL.setReleaseAction(btnL_releaseAction);
   btnL.drawSmoothButton(false, 3, TFT_BLACK); // 3 is outline width, TFT_BLACK is the surrounding background colour for anti-aliasing
 
   y = tft.height() / 2 + 10;
-  btnR.initButtonUL(x, y, BUTTON_W, BUTTON_H, TFT_WHITE, TFT_BLACK, TFT_GREEN, "OFF", 1);
+  btnR.initButtonUL(x, y, BUTTON_W, BUTTON_H, TFT_WHITE, TFT_BLACK, TFT_GREEN, off_label, 1);
   btnR.setPressAction(btnR_pressAction);
   //btnR.setReleaseAction(btnR_releaseAction);
   btnR.drawSmoothButton(false, 3, TFT_BLACK); // 3 is outline width, TFT_BLACK is the surrounding background colour for anti-aliasing
@@ -130,11 +136,10 @@ void touch_calibrate()
   uint16_t calData[5];
   uint8_t calDataOK = 0;
 
-  // check file system exists
-  if (!LITTLEFS.begin()) {
-    Serial.println("Formating file system");
-    LITTLEFS.format();
-    LITTLEFS.begin();
+  // check file system exists (format on fail)
+  if (!LITTLEFS.begin(true)) {
+    Serial.println("LITTLEFS mount/format failed");
+    return;
   }
 
   // check if calibration file exists and size is correct
