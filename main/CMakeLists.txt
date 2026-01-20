@@ -117,7 +117,7 @@ set(COMPONENT_ADD_INCLUDEDIRS
 "../apps/kopie_van_wifi_scan_example_van_esp_idf"
 "../libs/esp_http_client/main"
 
-"../apps/pong_cleangui"
+"../apps/pong/pong"
 
 #"../apps/TestHwLibGlcOled"
 # Adafruit libs for driving SSD1306 OLED:

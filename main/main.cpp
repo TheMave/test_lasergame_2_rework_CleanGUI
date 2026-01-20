@@ -18,7 +18,7 @@
 namespace crt
 {
 	// Create a "global" logger object within namespace crt.
-	const unsigned int pinButtonDump = 35; // Pressing a button connected to this pin dumps the latest logs to serial monitor.
+	const unsigned int pinButtonDump = 22; // Pressing a button connected to this pin dumps the latest logs to serial monitor.
 	Logger<100> theLogger("Logger", 2 /*priority*/, ARDUINO_RUNNING_CORE, pinButtonDump);
 	ILogger& logger = theLogger; // Global logger instance used by CleanGUI components.
 }
@@ -56,8 +56,8 @@ namespace crt
 //#include "TestButton.ino"
 //#include <TouchscreenButton.ino>
 //#include <TouchscreenButtonGroup.ino>
-#include <TouchscreenKeyboard.ino>
-//#include <Inputfield.ino>
+//#include <TouchscreenKeyboard.ino>
+#include <Inputfield.ino>
 //#include <Pong2.ino>
 
 // **** Test of thirdparty libs CleanGUI depends on ****
